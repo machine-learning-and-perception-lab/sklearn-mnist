@@ -1,6 +1,8 @@
 from warnings import filterwarnings
 filterwarnings('ignore')
 
+import random
+import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.datasets import fetch_openml
 from sklearn.neural_network import MLPClassifier
@@ -24,7 +26,7 @@ def create_mlp(learning_rate, depth):
 	print('Building MLP...')
 
 	hidden_layer_sizes = tuple([64 for _ in range(depth)])
-	epochs = 5#50
+	epochs = 30
 	solver = 'adam'
 	weight_decay = 1e-4
 
@@ -40,6 +42,7 @@ def create_mlp(learning_rate, depth):
 
 	return mlp
 
+
 def train_mlp(mlp, X_train, y_train):
 	print('Training MLP...')
 
@@ -47,14 +50,34 @@ def train_mlp(mlp, X_train, y_train):
 
 	print('Training done!')
 
-	print("Training set accuracy: %f" % mlp.score(X_train, y_train))
+	train_accuracy = mlp.score(X_train, y_train)
+
+	print("Training set accuracy: %f" % train_accuracy)
+
+	return train_accuracy
+
 
 def test_mlp(mlp, X_test, y_test):
-	print("Test set accuracy: %f" % mlp.score(X_test, y_test))
+	test_accuracy = mlp.score(X_test, y_test)
+	
+	print("Test set accuracy: %f" % test_accuracy)
 
-def show_plots(mlp):
-	plt.plot(mlp.loss_curve_)
-	plt.title('Loss')
-	plt.ylabel('Loss value')
-	plt.xlabel('Epochs')
+	return test_accuracy
+
+
+def show_samples(mlp, X_test, y_test):
+	fig, ax = plt.subplots(nrows=3, ncols=3, figsize=(8,8))
+
+	for i, axi in enumerate(ax.flat):
+		sample = np.expand_dims(X_test[random.randint(0, X_test.shape[0]-1)], 0)
+		
+		predicted_cls = mlp.predict(sample)
+		
+		digit_img = sample.reshape((28, 28)) * 255
+
+		axi.imshow(digit_img)
+		axi.set_title('Prediction: {}'.format(predicted_cls[0]))
+		axi.set_xticks([])
+		axi.set_yticks([])
+
 	plt.show()
